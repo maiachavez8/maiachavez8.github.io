@@ -1,0 +1,62 @@
+---
+title: "Maps: US States Data"
+editor_options: 
+  chunk_output_type: inline
+---
+
+The data set I used has information on all death penalties that were carried out since 1976, and information about the people executed. I thought it might be interesting to see if there are any racial biases in who is sentenced to death. I made a new data set from the one below using the variables Race and State.
+
+```{r}
+#| message: false
+#| warning: false
+#| include: false
+library(tidyverse)
+execution <- read_csv("execution.csv") 
+
+library(maps)
+library(viridis)
+
+us_states <- map_data("state")
+head(us_states)
+
+```
+
+```{r}
+execution
+```
+
+I collapsed Race into two values: white and person of color. Then using the counts of each race executed by state I was able to pivot the data set so each state only had one row with columns white and person of color. Then using summarize, I found the proportion of people of color executed to total people executed for each state.
+
+```{r}
+state_execution <- execution |>
+  mutate(race= 
+           fct_collapse(Race,poc= c("American Indian or Alaska Native", "Asian", "Latinx", "Other Race", "Black"
+), white= "White")) |>
+  group_by(State) |>
+  count(race) |>
+  pivot_wider(names_from= race, values_from= n, 
+              values_fill= 0) |>
+  summarize(prop_poc_ex= poc/(poc+white)) |>
+  mutate(State = str_to_lower(State))
+
+state_execution
+```
+
+Next I made a plot to visually these proportions across states.
+
+```{r, setup}
+#| message: false
+#| warning: false
+
+state_execution |>
+  right_join(us_states, by = c("State" = "region")) |>
+  ggplot(mapping = aes(x = long, y = lat,
+                          group = group)) + 
+  geom_polygon(aes(fill = prop_poc_ex), color = "black") +
+  labs(fill= "Percent Executions who were POC", title= "How many people sentenced to death in prison are people of color?", subtitle= "Taken from all executions carried out since 1976", caption= "Data: https://deathpenaltyinfo.org/database/executions") +
+  coord_map() + 
+  theme_void() +
+  scale_fill_viridis(direction=-1) 
+```
+
+There are some limitations to the data, as there was no data on 15 states, shown in grey above. Also some of the states had only a few people executed which could skew percentages. Also in places like California and Texas, the percentage of people of color is higher, so the amount of people of color executed would naturally be higher. There aren't any obvious racial biases, however some states do have a higher percentage of people of color executed. For example, Florida has a 40% poc execution rate while their overall person of color population is around 30%, and Florida has a lot of values in the data set. I might be interesting to do more in depth of analysis of this data to truly determine any biases.

@@ -1,0 +1,94 @@
+---
+title: "Maps: Wisconsin Parties in 2016"
+image: maps2.png
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r}
+#| include: false
+devtools::install_github("baumer-lab/fec16")
+library(fec16)
+library(tidyverse)
+library(ggspatial)
+library(ggplot2)
+library(sf)
+
+src <- "http://cdmaps.polisci.ucla.edu/shp/districts113.zip"
+lcl_zip <- fs::path(tempdir(), "districts113.zip")
+download.file(src, destfile = lcl_zip)
+lcl_districts <- fs::path(tempdir(), "districts113")
+unzip(lcl_zip, exdir = lcl_districts)
+dsn_districts <- fs::path(lcl_districts, "districtShapes")
+st_layers(dsn_districts)
+districts <- st_read(dsn_districts, layer = "districts113") |>
+  mutate(DISTRICT = parse_number(as.character(DISTRICT)))
+head(districts, width = Inf)
+class(districts)
+
+district_elections1 <- results_house |>
+  mutate(district = parse_number(district_id)) |>
+  group_by(state, district) |>
+  summarize(
+    N = n(), 
+    total_votes = sum(general_votes, na.rm = TRUE),
+    d_votes = sum(ifelse(party == "DEM", general_votes, 0), na.rm = TRUE),
+    r_votes = sum(ifelse(party == "REP", general_votes, 0), na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    other_votes = total_votes - d_votes - r_votes,
+    r_prop = r_votes / total_votes,  
+    winner = ifelse(r_votes > d_votes, "Republican", "Democrat")
+  )
+wi_results <- district_elections1 |>
+  filter(state == "WI")
+wi_results |>                  
+  select(-state)
+```
+
+I followed the same process we did for the North Carolina data. I downloaded the UCLA data. The code below uses the data set made from a fec16 package that filters for Wisconsin results only. Next, we can draw the districts for Wisconsin.
+
+```{r}
+wi_shp <- districts |>
+  filter(STATENAME == "Wisconsin")
+wi_shp |>
+  st_geometry() |>
+  plot(col = gray.colors(nrow(wi_shp)))
+
+
+```
+
+```{r}
+#| output: false
+wi_merged <- wi_shp |>
+  st_transform(4326) |>
+  inner_join(wi_results, by = c("DISTRICT" = "district"))
+head(wi_merged, width = Inf)
+```
+
+We can now show the results for the 2016 election and show which party one which district and the level of Democratic and Republican support for each.
+
+```{r}
+#| warning: false
+#| message: false 
+
+wi <- ggplot(data = wi_merged, aes(fill = winner)) +
+  annotation_map_tile(zoom = 6, type = "osm", progress = "none") + 
+  geom_sf(alpha = 0.5) +
+  scale_fill_manual("Winner", values = c("blue", "red")) + 
+  geom_sf_label(aes(label = DISTRICT), fill = "white") + 
+  theme_void()
+wi
+
+wi +
+  aes(fill = r_prop) + 
+  scale_fill_distiller(
+    "Proportion\nRepublican", 
+    palette = "RdBu", 
+    limits = c(0.0, 0.7)
+  ) +
+  labs(title= "Levels of Democratic and Republican Support by District in Wisconsin in 2016")
+```
+
+This map shows the voting breakdown for Wisconsin in 2016. Most of the districts in Wisconsin are majority republican. Two districts are completely democratic though, with a third district being less democratic but still democratic.

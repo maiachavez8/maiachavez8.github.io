@@ -1,0 +1,29 @@
+---
+title: "Maia Chavez"
+about:
+  id: intro-heading
+  template: trestles
+  image: images/profilepic.PNG
+  image-shape: round
+  links:
+    - icon: envelope
+      href: mailto:chavez8@stolaf.edu
+    - icon: github
+      href: https://github.com/maiachavez8
+---
+
+::: {#intro-heading}
+Chemistry Major with Statitics and Data Science Concentration <br> \@ [St. Olaf College](https://wp.stolaf.edu/)
+:::
+
+### Get in Touch
+
+**Email**: <a href='mailto:chavez8@stolaf.edu'>chavez\@stolaf.edu</a>
+
+**Office**: Newhall 247A
+
+**Address**: 1520 St. Olaf Ave, Northfield, MN 55057
+
+**Phone**: 952-460-0951
+
+------------------------------------------------------------------------
