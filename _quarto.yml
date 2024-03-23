@@ -10,6 +10,7 @@ website:
       - href: index.qmd
         text: Home
       - miniproject.qmd
+      - miniproject2.qmd
   page-footer:
     left: |
       &copy; Maia Chavez, 2024<br>

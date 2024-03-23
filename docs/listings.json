@@ -5,5 +5,11 @@
       "/miniproject/maps2/index.html",
       "/miniproject/maps/index.html"
     ]
+  },
+  {
+    "listing": "/miniproject2.html",
+    "items": [
+      "/miniproject2/chicks/index.html"
+    ]
   }
 ]

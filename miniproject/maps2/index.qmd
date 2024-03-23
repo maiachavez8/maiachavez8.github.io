@@ -81,6 +81,11 @@ wi <- ggplot(data = wi_merged, aes(fill = winner)) +
   theme_void()
 wi
 
+```
+
+```{r}
+#| warning: false
+#| message: false
 wi +
   aes(fill = r_prop) + 
   scale_fill_distiller(
@@ -88,7 +93,8 @@ wi +
     palette = "RdBu", 
     limits = c(0.0, 0.7)
   ) +
-  labs(title= "Levels of Democratic and Republican Support by District in Wisconsin in 2016")
+  labs(title= "Levels of Democratic and Republican Support 
+by District in Wisconsin in 2016")
 ```
 
 This map shows the voting breakdown for Wisconsin in 2016. Most of the districts in Wisconsin are majority republican. Two districts are completely democratic though, with a third district being less democratic but still democratic.
