@@ -127,6 +127,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link active" href="./miniproject2.html" rel="" target="" aria-current="page">
  <span class="menu-text">Mini Project 2</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./miniproject3.html" rel="" target="">
+ <span class="menu-text">Mini Project 3</span></a>
+  </li>  
 </ul>
             <div class="quarto-navbar-tools ms-auto">
 </div>
@@ -324,7 +328,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>p_value <span class="ot">&lt;-</span> <span class="fu">sum</span>(simulated_diff_cas<span class="sc">&gt;=</span>observed_diff_cas)<span class="sc">/</span><span class="dv">1000</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>p_value</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.019</code></pre>
+<pre><code>[1] 0.027</code></pre>
 </div>
 </div>
 <p>We can also calculate the p-value which is shown above. The p-value represents the chance that we would get an observed difference that is equal to or above the difference that we got. Because our p-value is less than 0.05, we can reject the null hypothesis that casein feed has no effect on chick weights compared to other types of feed.</p>

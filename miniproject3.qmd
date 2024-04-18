@@ -1,0 +1,118 @@
+---
+title: "Mini Project 3"
+contents: miniproject3.qmd
+page-layout: full
+title-block-banner: true
+comments: false
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Complexions in Makeup Products
+
+```{r, include= FALSE}
+library(tidyverse)
+sephora <- read_csv("sephora.csv")
+```
+
+I got my data from The Pudding Essay "The Naked Truth".
+(Source: https://pudding.cool/2021/03/foundation-names/)
+
+I wanted to examine the proportion of foundation products for fair skin and deep skin, so I created a dataset that shows the products that included "fair", "deep", and similar words in their description. I calculated the proportion of shades for fair skin and dark skin for each product. 
+
+```{r}
+complex <- sephora |>
+  select(brand, description, product, name, specific)|>
+  mutate(fair = 
+           ifelse((str_detect(description, "[Ff]air")|str_detect(description, "\\b[Ll]ight")|str_detect(description, "[Mm]edium") |str_detect(description, "[Pp]ale")), 1, 0), 
+         deep = ifelse((str_detect(description, "[Dd]eep")|str_detect(description, "[Tt]an")|str_detect(description, "[Rr]ich")|str_detect(description, "[Dd]ark")), 
+                       1, 0)) |>
+  group_by(product)|>
+  summarise(prop_fair= mean(fair), prop_deep= mean(deep))|>
+  filter(str_detect(prop_fair, "0\\.\\d*"), str_detect(prop_deep, "0\\.\\d*")) |>
+ arrange(desc(prop_fair))
+
+complex
+```
+
+Next I took ten products with the most fair shades and graphed it with its proportion of deep shades. I did the same with the ten products with the least amount of fair shades. 
+
+```{r}
+complex |>
+  head(10) |> 
+  pivot_longer(-product, names_to= "complex", values_to= "value") |>
+  ggplot(aes(x=value, y=product, fill= complex))+
+  geom_col() +
+  labs(x= "Proportion", y= "Product", fill= "Complexion", title= "The Proportion of Fair Skin Shades 
+and Deep Skin Shades for Products with 
+mostly Fair Skin Products")
+```
+
+```{r}
+complex |>
+  tail(10) |>
+ pivot_longer(-product, names_to= "complex", values_to= "value") |>
+  ggplot(aes(x=value, y=product, fill= complex))+
+  geom_col()+
+  labs(x= "Proportion", y= "Product", fill= "Complexion", title= "The Proportion of Fair Skin 
+Shades and Deep Skin 
+Shades for Products with 
+more Deep Skin Products")
+```
+
+As you can see from the above graphs, the ten products with the most fair shades had really low percentages of deep shades compared to the proportion of fair shades for the ten products with the most deep shades. The products with the most deep shades sometimes even had more fair shades or about the same number of fair shades. (Some shades can be used for multiple skin tones as well, which is why the proportions don't add up to one). This suggests some disparity between the available deep shades and fair shades for a lot of foundations. Fair shades appear to be more readily available 
+
+I then wanted to see what words in the descriptions of these shades had capital letters. Capital letters typically correspond to a place, food, or material that represents the shade.
+
+```{r}
+str_view(sephora$description, "[A-Z][A-Za-z]+\\b")
+```
+
+I then wanted to compare these capital words (it would only be the first capital for each shade if there are multiple). To see what relationship there might be between shade names and descriptor words. 
+
+```{r}
+sephora |> 
+  select(brand, description, product, name, specific)|>
+  mutate(fair = 
+           ifelse((str_detect(description, "[Ff]air")|str_detect(description, "\\b[Ll]ight")|str_detect(description, "[Mm]edium") |str_detect(description, "[Pp]ale")), 1, 0), 
+         deep = ifelse((str_detect(description, "[Dd]eep")|str_detect(description, "[Tt]an")|str_detect(description, "[Rr]ich")|str_detect(description, "[Dd]ark")), 
+                       1, 0)) |>
+  mutate(capital = str_extract(description, "[A-Z][a-z]+\\b")) |>
+  drop_na()|>
+  group_by(capital)|>
+  summarise(prop_fair= mean(fair), prop_deep= mean(deep))|>
+  filter(str_detect(prop_fair, "0\\.\\d*"), str_detect(prop_deep, "0\\.\\d*")) |>
+ arrange(desc(prop_fair)) |>
+  print(n=Inf)
+ 
+```
+
+Surprisingly, some of the words seem to have an even split between deep and fair shades. Although there are obviously some that have more fair shades (Vanilla), and more deep shades (Mocha). One I find particularly interesting is that Natural has more fair shades than deep shades. Is this inadvertently implying that deeper skin tones are not natural and fair skin tones are? This implies that there are some past racial biases that still exist in today's culture. 
+
+One word I wanted to look at specifically is nude. Similar to natural, nude is technically anyone's natural skin tone, but I wanted to see if it was present more on fair shade foundations. 
+
+```{r}
+nude <- sephora |> 
+  select(brand, description, product, name, specific)|>
+  mutate(fair = 
+           ifelse((str_detect(description, "[Ff]air")|str_detect(description, "\\b[Ll]ight")|str_detect(description, "[Mm]edium") |str_detect(description, "[Pp]ale")), 1, 0), 
+         deep = ifelse((str_detect(description, "[Dd]eep")|str_detect(description, "[Tt]an")|str_detect(description, "[Rr]ich")|str_detect(description, "[Dd]ark")), 
+                       1, 0)) |>
+  mutate(nude = str_extract(description, "[Nn]ude")) |>
+  drop_na()|>
+  group_by(nude)|>
+  summarise(prop_fair= mean(fair), prop_deep= mean(deep))|>
+  pivot_longer(!nude, names_to = "complex", values_to= "value")
+```
+
+```{r}
+nude |>
+  ggplot(aes(x= complex, y= value)) +
+  geom_col(fill= "hotpink2") +
+  labs(x= "Complexion", y= "Proportion", title= "Proportion of Products that Mention Nude for Fair and Deep Complexions")
+```
+
+A lot of deep shades have nude in their descriptor, as well as a lot of fair shades. There are many more fair shades that contain the word, although it's not like the deeper shades are lacking in that descriptor. 
+
+Overall, this data could imply the presence of some racial biases, but it is not nearly as bad as I thought it would be. 
